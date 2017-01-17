@@ -109,7 +109,8 @@ class ArgumentsGroup(object):
 
             r = {}
             try:
-                for field in self.groups:
+                for field in group:
+                    print type(field)
                     if not field.listed:
                         value = field.parse_value(
                             handler.get_argument(field.name, None)
@@ -131,7 +132,27 @@ class ArgumentsGroup(object):
 def define_arguments(*argdefs):
 
     def _wrapper(func):
+        args_groups = []
+        first_groups = []
 
+        for argdef in argdefs:
+            assert isinstance(argdef, (Field, ArgumentsGroup))
+
+            if isinstance(argdef, ArgumentsGroup):
+                args_groups.append(argdef)
+            else:
+                first_groups.append(argdef)
+        args_groups.insert(0, ArgumentsGroup(first_groups))
+
+        @functools.wraps(func)
+        def _(handler, *args, **kwargs):
+            arguments = {}
+            for args_group in args_groups:
+                arguments.update(args_group.parse_arguments(handler))
+
+            handler.arguments = arguments
+            return func(handler, *args, **kwargs)
+        return _
     return _wrapper
 
 

@@ -9,7 +9,6 @@ class route(object):
         self.uri = uri
 
     def __call__(self, _handler):
-        print '####'
         self.__class__._routes.append((self.uri, _handler))
         return _handler
 

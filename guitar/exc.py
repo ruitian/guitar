@@ -5,6 +5,7 @@ class Code(object):
 
     INTERNAL_ERROR = (10000, u'内部系统错误')
     API_REQUEST_ERROR = (10003, u'内部接口调用出错')
+    RESOURCE_NOT_FOUND = (10004, u'资源没找到')
 
     COMMON_ERROR = (20000, u'服务通常错误')
 
@@ -53,6 +54,10 @@ class BaseError(Exception):
 
 
 class InternetError(BaseError):
+    default = Code.INTERNAL_ERROR
+
+
+class InternalError(BaseError):
     default = Code.INTERNAL_ERROR
 
 

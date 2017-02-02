@@ -19,7 +19,7 @@ def decode_json(json_str):
 
 
 def encode_json(data):
-    return json.dumps(data, default=None, ensure_ascii=False)
+    return json.dumps(data, default=_handler_object_for_json, ensure_ascii=False)
 
 
 def oid2str(data, b64=True):

@@ -3,7 +3,7 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application
 from tornado.httpclient import AsyncHTTPClient
 from tornado.options import options, define, parse_command_line
-from handlers import route
+from guitar.handlers import route
 from guitar import settings
 
 define(

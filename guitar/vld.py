@@ -13,12 +13,14 @@ class Field(object):
                  required=False,
                  validator=None,
                  **kwargs):
+        assert name
         self.name = name
         self.default = default
         self.required = required
         self.validator = validator
 
         if isinstance(dtype, list):
+            assert len(list) == 1
             self.dtype = dtype[0]
             self.listed = True
         else:
@@ -110,7 +112,6 @@ class ArgumentsGroup(object):
             r = {}
             try:
                 for field in group:
-                    print type(field)
                     if not field.listed:
                         value = field.parse_value(
                             handler.get_argument(field.name, None)

@@ -29,8 +29,14 @@ def user_register(arguments):
 
 def check_password(arguments):
 
-    users = list(conn.User.find({'username': arguments['username']}))
+    users = list(conn.User.find(
+            spec={'username': arguments['username']},
+            fields=['username', 'password']
+            )
+        )
+    print users
     if len(users) != 0:
         for user in users:
-            return check_password_hash(user['password'], arguments['password'])
-    return False
+            return check_password_hash(
+                user['password'], arguments['password']), user
+    return False, user[0]

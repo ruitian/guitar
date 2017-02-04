@@ -30,12 +30,14 @@ if not settings.MONGODB_REPLICASET:
 else:
     from mongokit import MongoReplicaSetClient
 
-    mongo_uri = 'mongodb://%s/%s' % (settings.MONGODB_HOST, settings.MONGODB_DB)
+    mongo_uri = 'mongodb://%s/%s' % (
+        settings.MONGODB_HOST, settings.MONGODB_DB)
     if settings.MONGODB_USER:
-        mongo_uri = 'mongodb://%s:%s@%s/%s' % (settings.MONGODB_USER,
-                                                  settings.MONGODB_PWD,
-                                                  settings.MONGODB_HOST,
-                                                  settings.MONGODB_DB)
+        mongo_uri = 'mongodb://%s:%s@%s/%s' % (
+            settings.MONGODB_USER,
+            settings.MONGODB_PWD,
+            settings.MONGODB_HOST,
+            settings.MONGODB_DB)
 
     conn = MongoReplicaSetClient(
         mongo_uri,
@@ -60,4 +62,4 @@ class BaseDoc(Document):
         return rv
 
 
-from .user import *
+from .user import *  # noqa

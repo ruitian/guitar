@@ -3,10 +3,11 @@
 # from tornado.web import authenticated
 from guitar.store import conn
 from . import route
-from .base import BaseHandler
 from .. import vld
-from guitar.utils.tools import  datetime2timestamp
+from .base import BaseHandler
+from guitar.utils.tools import datetime2timestamp
 from guitar.services.user import get_user_id, user_register, check_password
+from guitar.utils.tools import encode_json
 
 
 @route('/api/accounts')
@@ -15,14 +16,12 @@ class UserHandler(BaseHandler):
     @vld.define_arguments(
         vld.Field('name', dtype=int, default='liming', required=True)
     )
-
     def get(self):
         get_user_id()
         rv = []
 
         fields = ['user_id', 'username', 'utime']
         users = list(conn.User.find(fields=fields))
-        print self.request.__dict__
         # raise exc.APIRequestError
         for user in users:
             user['utime'] = datetime2timestamp(user['utime'])
@@ -40,7 +39,9 @@ class RegisterHandler(BaseHandler):
     )
     def post(self):
         user = user_register(self.arguments)
-        print user
+        rv = {'msg': '用户名已经被占用'}
+        if user is not None:
+            self.write_data(rv)
 
 
 @route('/api/account/login')
@@ -50,6 +51,28 @@ class LoginHandler(BaseHandler):
         vld.Field('username', dtype=str, required=True),
         vld.Field('password', required=True)
     )
+    def get(self):
+        pass
+
     def post(self):
-        is_login = check_password(self.arguments)
-        print is_login
+        is_login, user = check_password(self.arguments)
+        if not is_login:
+            rv = {'msg': '用户名或密码错误'}
+            self.set_secure_cookie('flash', 'Login incorrect')
+            # self.redirect('/api/account/login')
+            return self.write_data(rv)
+        else:
+            self.set_current_user(user)
+            return self.write_data(user)
+
+    def set_current_user(self, user):
+        if user:
+            self.set_secure_cookie('user', encode_json(user))
+        else:
+            self.clear_cookie('user')
+
+
+@route('/api/account/current')
+class CurrentUserHandler(BaseHandler):
+    def post(self):
+        return self.write_data(self.get_current_user())

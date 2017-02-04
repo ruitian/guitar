@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from tornado.web import RequestHandler
 
-from guitar.utils.tools import encode_json
+from guitar.utils.tools import encode_json, decode_json
 from guitar import exc
 
 
@@ -64,3 +64,10 @@ class BaseHandler(RequestHandler):
                 self.set_header(k, v)
 
         self.write(chunk)
+
+    def get_current_user(self):
+        user_json = self.get_secure_cookie('user')
+        if user_json:
+            return decode_json(user_json)
+        else:
+            return None

@@ -4,6 +4,7 @@ from guitar.const import MONGO_INDEX
 
 import datetime
 
+
 @conn.register
 class User(BaseDoc):
     __collection__ = 'user'

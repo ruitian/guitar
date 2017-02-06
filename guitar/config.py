@@ -18,5 +18,5 @@ MONGODB_SOCKET_TIMEOUT_MS = 10000
 MONGODB_WAIT_QUEUE_TIMEOUT_MS = 6000
 MONGODB_WAIT_QUEUE_MULTIPLE = 5000
 
-cookie_secret = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+COOKIE_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')

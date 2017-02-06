@@ -8,6 +8,7 @@ from .base import BaseHandler
 from guitar.utils.tools import datetime2timestamp
 from guitar.services.user import get_user_id, user_register, check_password
 from guitar.utils.tools import encode_json
+from guitar.models import UserModel
 
 
 @route('/api/accounts')
@@ -26,7 +27,9 @@ class UserHandler(BaseHandler):
         for user in users:
             user['utime'] = datetime2timestamp(user['utime'])
         rv.extend(users)
-        self.write_data(rv)
+        session = self.application.session()
+        users = session.query(UserModel).all()
+        self.write_data([user.to_json() for user in users])
         self.finish()
 
 

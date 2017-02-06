@@ -16,4 +16,4 @@ class route(object):
     def get_routes(cls):
         return cls._routes
 
-from . import user
+from . import user  # noqa

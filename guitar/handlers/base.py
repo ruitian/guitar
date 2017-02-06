@@ -71,3 +71,8 @@ class BaseHandler(RequestHandler):
             return decode_json(user_json)
         else:
             return None
+
+    def get_flash(self):
+        flash = self.get_secure_cookie('flash')
+        self.clear_cookie('flash')
+        return flash

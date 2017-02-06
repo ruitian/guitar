@@ -47,13 +47,16 @@ class RegisterHandler(BaseHandler):
 @route('/api/account/login')
 class LoginHandler(BaseHandler):
 
+    def get(self):
+        # 通过cookie测试
+        self.render('login.html',
+                    notification=self.get_flash(),
+                    current_user=self.get_current_user())
+
     @vld.define_arguments(
         vld.Field('username', dtype=str, required=True),
         vld.Field('password', required=True)
     )
-    def get(self):
-        pass
-
     def post(self):
         is_login, user = check_password(self.arguments)
         if not is_login:

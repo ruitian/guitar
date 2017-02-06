@@ -21,7 +21,8 @@ routes = route.get_routes()
 application = Application(
     routes,
     debug=settings.DEBUG,
-    cookie_secret=settings.cookie_secret)
+    cookie_secret=settings.cookie_secret,
+    template_path=settings.TEMPLATE_PATH)
 
 
 def main():

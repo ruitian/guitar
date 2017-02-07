@@ -5,6 +5,7 @@ Help you find the other half on campus
 ---
 ### Personal
 
+- [ ] tornado-email
 - [ ] Registered & Login
 - [ ] Authentication
   - [ ] Stu Card or Id Card

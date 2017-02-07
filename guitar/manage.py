@@ -30,7 +30,8 @@ class MyApplication(Application):
         settings = {
             'debug': config.DEBUG,
             'cookie_secret': config.COOKIE_SECRET,
-            'templates_path': config.TEMPLATE_PATH,
+            'static_path': config.STATIC_PATH,
+            'template_path': config.TEMPLATE_PATH,
             'db_session': db_session
         }
         self.session = kwargs.pop('session')

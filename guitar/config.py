@@ -20,3 +20,4 @@ MONGODB_WAIT_QUEUE_MULTIPLE = 5000
 
 COOKIE_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
+STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')

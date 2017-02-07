@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="/static/jquery-1.7.2.min.js"></script>
+  <style>
+    body {
+      font-family: 'Avenir', Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: #2c3e50;
+      margin-top: 60px;
+    }
+    p {
+      font-weight: normal;
+      color: #42b983;
+    }
+  </style>
+  <title>Document</title>
+</head>
+<body>
+{{ info }}
+
+<p id="text"></p>
+<h1></h1>
+
+<script type="text/javascript">
+  // try {
+  //   var request = new XMLHttpRequest();
+  // } catch (e) {
+  //   alert("Browser doesn't support window.XMLHttpRequest");
+  // }
+  // var pos = 0;
+  // request.onreadystatechange = function () {
+  //   if (request.readyState === 3 ) {
+  //     var data = request.responseText;
+  //     $('p').append(data.substring(pos) + '<br>');
+  //     pos = data.length;
+  //   }
+  // }
+  //
+  // request.open("POST", "/api/test", true);
+  // request.send(null);
+
+  var updater = {
+    poll: function () {
+      $.ajax({
+        url: '/api/test',
+        type: 'POST',
+        dataType: 'text',
+        success: updater.onSuccess,
+        error: updater.onError
+      })
+    },
+
+    onSuccess: function(data, dataStatus) {
+      try {
+        $('p').append(data+"<br>")
+      } catch(e) {
+        updater.onError();
+        return;
+      }
+      interval = window.setTimeout(updater.poll, 0);
+    },
+
+    onError: function() {
+      console.log("Poll Error");
+    }
+  }
+
+  // updater.poll();
+
+  var wsUpdater = {
+    socket: null,
+    start: function () {
+      if ("WebSocket" in window) {
+        wsUpdater.socket = new WebSocket("ws://localhost:8080/ws");
+      }
+      else {
+        wsUpdater.socket = new MozWebSocket("ws://localhost:8080/ws");
+      }
+      wsUpdater.socket.onmessage = function (event) {
+        console.log(event);
+        $('h1').append(event.data + "<br>");
+      }
+      wsUpdater.socket.send("hello");
+    }
+  }
+
+  wsUpdater.start();
+</script>
+</body>
+</html>

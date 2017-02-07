@@ -10,6 +10,12 @@ from guitar.services.user import get_user_id, user_register, check_password
 from guitar.utils.tools import encode_json
 from guitar.models import UserModel
 
+import random
+import time
+import tornado
+import tornado.websocket
+import logging
+
 
 @route('/api/accounts')
 class UserHandler(BaseHandler):
@@ -82,3 +88,45 @@ class LoginHandler(BaseHandler):
 class CurrentUserHandler(BaseHandler):
     def post(self):
         return self.write_data(self.get_current_user())
+
+
+@route('/api/test')
+class TestHandler(BaseHandler):
+
+    def get(self):
+        a = self.render_string('error.html')
+        print a
+        self.render('index.html', info="下面显示服务端数据")
+
+    @tornado.web.asynchronous
+    def post(self):
+        self.get_data(callback=self.on_finished)
+
+    def get_data(self, callback):
+        if self.request.connection.stream.closed():
+            return
+        num = random.randint(1, 100)
+        tornado.ioloop.IOLoop.instance().add_timeout(
+            time.time()+3,
+            lambda: callback(num)
+        )
+
+    def on_finished(self, data):
+        self.write('Server says: %d' % data)
+        self.finish()
+
+
+@route('/ws')
+class WebSocketHandler(tornado.websocket.WebSocketHandler):
+
+    def check_origin(self, origin):
+        return True
+
+    def open(self):
+        for i in range(10):
+            num = random.randint(1, 100)
+            self.write_message(str(num))
+
+    def on_message(self, message):
+        logging.into('getting message' + message)
+        self.write_message("You say" + message)

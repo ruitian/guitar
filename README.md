@@ -1,6 +1,14 @@
-# 任务列表
+# Some One
 
-  - [ ] 学习Python3
-  - [ ] 学习Tornado
-  - [x] 了解代码(kzstore)
-  - [ ] guitar项目
+Help you find the other half on campus
+
+---
+### Personal
+
+- [ ] Registered & Login
+- [ ] Authentication
+  - [ ] Stu Card or Id Card
+  - [ ] Academic Affairs Office's Crawler
+  - [ ] Phone & Email
+  - [ ] Manual verificationAcademic
+- [ ] Improve information

@@ -15,12 +15,11 @@ define(
 define(
     'debug', default=True, help='run in debug mode with authreload', type=bool)
 define(
-    'db_connection_str', default='mysql://root@localhost/test',
+    'db_connection_str', default='mysql://root@localhost/apeso',
     help='Database connection string for application')
 
 db_engine = create_engine(options.db_connection_str)
 db_session = sessionmaker()
-
 AsyncHTTPClient.configure('tornado.simple_httpclient\
 .SimpleAsyncHTTPClient', max_clients=3)
 

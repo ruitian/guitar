@@ -1,42 +1,63 @@
 # -*- coding: utf-8 -*-
 from werkzeug import generate_password_hash, check_password_hash
-from guitar.store import conn
+
+from . import BaseService
+from guitar.models import UserModel
 
 
-def get_user_id():
+class UserService(BaseService):
 
-    user = conn.Counters.find_and_modify(
-        {'name': 'user_id'},
-        {'$inc': {'user_id': 1}}
-    )
-    return user['user_id']
+    def get_users(self):
+        users = self.session.query(UserModel).all()
+        return [user.to_dict() for user in users]
 
-
-def user_register(arguments):
-
-    user = list(conn.User.find({'username': arguments['username']}))
-    if len(user) == 0:
-        arguments.update({
-            'user_id': get_user_id(),
-            'password': generate_password_hash(arguments['password'])
-        })
-        user = conn.User()
-        user.update(arguments)
-        user.save()
-    else:
-        return user
-
-
-def check_password(arguments):
-
-    users = list(conn.User.find(
-            spec={'username': arguments['username']},
-            fields=['username', 'password']
+    def create_user(self, arguments):
+        user = UserModel(
+            nickname=arguments.get('nickname'),
+            email=arguments.get('email'),
+            password=generate_password_hash(
+                arguments.get('password')
             )
         )
-    print users
-    if len(users) != 0:
-        for user in users:
-            return check_password_hash(
-                user['password'], arguments['password']), user
-    return False, user[0]
+        try:
+            self.session.add(user)
+            self.session.commit()
+        except Exception as e:
+            raise e
+            self.session.rollback()
+            self.session.close()
+        return user.to_dict()
+
+    def get_user_with_nickname(self, nickname):
+        user = self.session.query(UserModel).filter(
+            UserModel.nickname == nickname).first()
+        self.session.close()
+
+        if user is None:
+            return None
+        else:
+            return user
+
+    def get_user_with_email(self, email):
+        user = self.session.query(UserModel).filter(
+            UserModel.email == email).first()
+        self.session.close()
+
+        if user is None:
+            return None
+        else:
+            return user
+
+    def get_one_user(self, arguments):
+        nickname_or_email = arguments.get('nickname_or_email')
+        password = arguments.get('password')
+
+        if '@' in nickname_or_email:
+            user = self.get_user_with_email(nickname_or_email)
+        else:
+            user = self.get_user_with_nickname(nickname_or_email)
+
+        if user and check_password_hash(user.password, password):
+            return user
+        else:
+            return None

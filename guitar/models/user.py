@@ -25,8 +25,11 @@ class UserModel(Base):
 
     def to_dict(self):
         return dict(
-            username=self.username,
-            password=self.password,
-            sex=self.sex,
-            age=self.age
+            nickname=self.nickname,
+            email=self.email,
+            phone_number=self.phone_number,
+            portrait_url=self.portrait_url,
+            registered_on=self.registered_on,
+            confirmed=self.confirmed,
+            confirmed_on=self.confirmed_on
         )

@@ -1,132 +1,73 @@
 # -*- coding: utf-8 -*-
 # from tornado import gen
 # from tornado.web import authenticated
-from guitar.store import conn
 from . import route
 from .. import vld
 from .base import BaseHandler
-from guitar.utils.tools import datetime2timestamp
-from guitar.services.user import get_user_id, user_register, check_password
 from guitar.utils.tools import encode_json
-from guitar.models import UserModel
+from guitar.services import UserService
 
-import random
-import time
-import tornado
-import tornado.websocket
-import logging
+# from tornado_mail import Mail, Message
 
 
 @route('/api/accounts')
 class UserHandler(BaseHandler):
 
-    @vld.define_arguments(
-        vld.Field('name', dtype=int, default='liming', required=True)
-    )
-    def get(self):
-        get_user_id()
-        rv = []
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
 
-        fields = ['user_id', 'username', 'utime']
-        users = list(conn.User.find(fields=fields))
-        # raise exc.APIRequestError
-        for user in users:
-            user['utime'] = datetime2timestamp(user['utime'])
-        rv.extend(users)
-        session = self.application.session()
-        users = session.query(UserModel).all()
-        self.write_data([user.to_json() for user in users])
-        self.finish()
+    def get(self):
+        users = self.user_service.get_users()
+        return self.write_data(users)
 
 
 @route('/api/account/register')
 class RegisterHandler(BaseHandler):
 
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
     @vld.define_arguments(
-        vld.Field('username', dtype=str, required=True),
-        vld.Field('password', required=True)
+        vld.Field('nickname', dtype=str, required=True),
+        vld.Field('password', required=True),
+        vld.Field('email', required=True)
     )
     def post(self):
-        user = user_register(self.arguments)
-        rv = {'msg': '用户名已经被占用'}
-        if user is not None:
-            self.write_data(rv)
+        user_by_nickname = self.user_service.get_user_with_nickname(
+            self.get_argument('nickname'))
+        user_by_email = self.user_service.get_user_with_email(
+            self.get_argument('email'))
+        if user_by_nickname is not None:
+            rv = {'msg': '昵称被占用', 'ret': -1000}
+        if user_by_email is not None:
+            rv = {'msg': '邮箱已经注册', 'ret': -1000}
+        if user_by_email is None and user_by_nickname is None:
+            rv = self.user_service.create_user(self.arguments)
+
+        self.write_data(rv)
 
 
 @route('/api/account/login')
 class LoginHandler(BaseHandler):
 
-    def get(self):
-        # 通过cookie测试
-        self.render('login.html',
-                    notification=self.get_flash(),
-                    current_user=self.get_current_user())
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
 
     @vld.define_arguments(
-        vld.Field('username', dtype=str, required=True),
+        vld.Field('nickname_or_email', dtype=str, required=True),
         vld.Field('password', required=True)
     )
     def post(self):
-        is_login, user = check_password(self.arguments)
-        if not is_login:
-            rv = {'msg': '用户名或密码错误'}
+        rv = self.user_service.get_one_user(self.arguments)
+        if rv is None:
+            rv = {'msg': '用户名或密码错误', 'ret': -1001}
             self.set_secure_cookie('flash', 'Login incorrect')
-            # self.redirect('/api/account/login')
-            return self.write_data(rv)
         else:
-            self.set_current_user(user)
-            return self.write_data(user)
+            self.set_current_user(rv)
+            self.write_data(rv)
 
     def set_current_user(self, user):
         if user:
             self.set_secure_cookie('user', encode_json(user))
         else:
             self.clear_cookie('user')
-
-
-@route('/api/account/current')
-class CurrentUserHandler(BaseHandler):
-    def post(self):
-        return self.write_data(self.get_current_user())
-
-
-@route('/api/test')
-class TestHandler(BaseHandler):
-
-    def get(self):
-        a = self.render_string('error.html')
-        print a
-        self.render('index.html', info="下面显示服务端数据")
-
-    @tornado.web.asynchronous
-    def post(self):
-        self.get_data(callback=self.on_finished)
-
-    def get_data(self, callback):
-        if self.request.connection.stream.closed():
-            return
-        num = random.randint(1, 100)
-        tornado.ioloop.IOLoop.instance().add_timeout(
-            time.time()+3,
-            lambda: callback(num)
-        )
-
-    def on_finished(self, data):
-        self.write('Server says: %d' % data)
-        self.finish()
-
-
-@route('/ws')
-class WebSocketHandler(tornado.websocket.WebSocketHandler):
-
-    def check_origin(self, origin):
-        return True
-
-    def open(self):
-        for i in range(10):
-            num = random.randint(1, 100)
-            self.write_message(str(num))
-
-    def on_message(self, message):
-        logging.into('getting message' + message)
-        self.write_message("You say" + message)

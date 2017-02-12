@@ -23,6 +23,8 @@ class config:
     TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
     STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
 
+    SECRET_KEY = 'you will never guess apeso'
+    SECURITY_PASSWORD_SALT = 'never_guess_it'
     # mail
     MAIL_SERVER = 'smtp.ym.163.com'
     MAIL_PORT = 465

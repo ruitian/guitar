@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from werkzeug import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer
 
 from . import BaseService
 from guitar.models import UserModel
@@ -61,3 +62,21 @@ class UserService(BaseService):
             return user
         else:
             return None
+
+    def generate_confirmation_token(self, email, secret, password_salt):
+        serializer = URLSafeTimedSerializer(secret)
+        return serializer.dumps(
+            email,
+            salt=password_salt)
+
+    def verify_email_token(self,
+                           token, secret, password_salt, expiration=3600):
+        serializer = URLSafeTimedSerializer(secret)
+        try:
+            email = serializer.loads(
+                token,
+                salt=password_salt,
+                max_age=expiration)
+        except:
+            return False
+        return email

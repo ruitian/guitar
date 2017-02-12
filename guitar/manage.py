@@ -30,6 +30,8 @@ class MyApplication(Application):
         config = conf.get('dev')
         settings = dict(
             debug=config.DEBUG,
+            secret_key=config.SECRET_KEY,
+            password_salt=config.SECURITY_PASSWORD_SALT,
             cookie_secret=config.COOKIE_SECRET,
             static_path=config.STATIC_PATH,
             template_path=config.TEMPLATE_PATH,

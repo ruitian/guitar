@@ -7,7 +7,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
 from guitar.handlers import route
-from guitar import config  # noqa
+from guitar.config import config as conf
+from guitar.models import Base
 
 define(
     'port', default=8080, help='run on the ginven port', type=int)
@@ -27,16 +28,27 @@ AsyncHTTPClient.configure('tornado.simple_httpclient\
 class MyApplication(Application):
     def __init__(self, *args, **kwargs):
         routes = route.get_routes()
-        settings = {
-            'debug': config.DEBUG,
-            'cookie_secret': config.COOKIE_SECRET,
-            'static_path': config.STATIC_PATH,
-            'template_path': config.TEMPLATE_PATH,
-            'db_session': db_session
-        }
+        config = conf.get('dev')
+        settings = dict(
+            debug=config.DEBUG,
+            cookie_secret=config.COOKIE_SECRET,
+            static_path=config.STATIC_PATH,
+            template_path=config.TEMPLATE_PATH,
+            db_session=db_session,
+            mail_server=config.MAIL_SERVER,
+            mail_port=config.MAIL_PORT,
+            mail_username=config.MAIL_USERNAME,
+            mail_password=config.MAIL_PASSWORD,
+            mail_use_ssl=config.MAIL_USE_SSL,
+            mail_default_sender=config.MAIL_DEFAULT_SENDER
+        )
         self.session = kwargs.pop('session')
         self.session.configure(bind=db_engine)
         Application.__init__(self, routes, **settings)
+
+
+def create_db():
+    Base.metadata.create_all(db_engine)
 
 
 def main():

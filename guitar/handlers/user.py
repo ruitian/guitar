@@ -17,7 +17,7 @@ from tornado_mail import Mail, Message
 def send_confirm_mail(app, reciver, url):
     mail = Mail(app)
     msg = Message(
-        subject='qweqeq',
+        subject='ApeSo verify account',
         body=url,
         recipients=reciver
     )
@@ -67,7 +67,7 @@ class RegisterHandler(BaseHandler):
                 'token': token
             }
             url = '{0}{1}{2}{3}'.format(
-                'http://', self.request.host, '?', urlencode(param))
+                'http://', self.request.host, '/api/account/verify?', urlencode(param))
             rv = self.user_service.create_user(self.arguments)
             send_confirm_mail(
                 self.application, [self.get_argument('email')], url)
@@ -86,10 +86,6 @@ class LoginHandler(BaseHandler):
         vld.Field('password', required=True)
     )
     def post(self):
-        email = self.user_service.verify_email_token(
-            'IjgxOTc5OTc2MTJAcXEuY29tIg.C4H8MQ.gc59q93NI1i0iBMJtM39cm114Ys',
-            self.application.settings['secret_key'],
-            self.application.settings['password_salt'])
         rv = self.user_service.get_one_user(self.arguments)
         if rv is None:
             rv = {'msg': '用户名或密码错误', 'ret': -1001}
@@ -108,3 +104,25 @@ class LoginHandler(BaseHandler):
             self.set_secure_cookie('user', encode_json(user))
         else:
             self.clear_cookie('user')
+
+@route('/api/account/verify')
+class TokenHandler(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    @vld.define_arguments(
+        vld.Field('token', dtype=str, required=True)
+    )
+    def get(self):
+        token = self.get_argument('token')
+        email = self.user_service.verify_email_token(token,
+                                                     self.application.settings['secret_key'],
+                                                     self.application.settings['password_salt']
+                                                    )
+
+        if not email:
+            rv = {'msg': '验证链接错误', 'ret': -1003}
+        else:
+            rv = self.user_service.update_user_state(email)
+        self.write_data(rv)

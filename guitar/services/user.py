@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 from werkzeug import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 
@@ -80,3 +81,12 @@ class UserService(BaseService):
         except:
             return False
         return email
+
+    def update_user_state(self, email):
+        user = self.session.query(UserModel).filter(
+            UserModel.email == email).first()
+        user.confirmed = True
+        user.confirmed_on = datetime.datetime.now()
+        self.session.add(user)
+        self.session.commit()
+        return user and user.to_dict()

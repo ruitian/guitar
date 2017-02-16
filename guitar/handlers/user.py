@@ -11,17 +11,26 @@ from urllib import urlencode
 
 import tornado
 from tornado_mail import Mail, Message
+from tornado.concurrent import Future
 
 
 @tornado.gen.coroutine
 def send_confirm_mail(app, reciver, url):
+    future = Future()
+
     mail = Mail(app)
     msg = Message(
         subject='ApeSo verify account',
         body=url,
         recipients=reciver
     )
-    mail.send(msg)
+    try:
+        mail.send(msg)
+        future.set_result({'msg': '发送成功!'})
+    except Exception, e:
+        future.set_result({'msg': '发送失败!'})
+        raise e
+    return future
 
 
 @route('/api/accounts')
@@ -67,10 +76,12 @@ class RegisterHandler(BaseHandler):
                 'token': token
             }
             url = '{0}{1}{2}{3}'.format(
-                'http://', self.request.host, '/api/account/verify?', urlencode(param))
+                'http://', self.request.host,
+                '/api/account/verify?', urlencode(param))
             rv = self.user_service.create_user(self.arguments)
-            send_confirm_mail(
+            result = yield send_confirm_mail(
                 self.application, [self.get_argument('email')], url)
+            rv.update(result.result())
 
         self.write_data(rv)
 
@@ -93,9 +104,12 @@ class LoginHandler(BaseHandler):
             self.set_secure_cookie('flash', 'Login incorrect')
         else:
             if rv.confirmed:
+                self.session['nickname'] = rv.nickname
+                self.session.save()
                 self.set_current_user(rv)
             else:
                 rv = {'msg': '账号还没有激活，请检查邮箱邮件', 'ret': -1002}
+        print self.session
         self.write_data(rv)
 
     def set_current_user(self, user):
@@ -104,6 +118,7 @@ class LoginHandler(BaseHandler):
             self.set_secure_cookie('user', encode_json(user))
         else:
             self.clear_cookie('user')
+
 
 @route('/api/account/verify')
 class TokenHandler(BaseHandler):

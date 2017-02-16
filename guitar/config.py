@@ -19,7 +19,17 @@ class config:
     MONGODB_WAIT_QUEUE_TIMEOUT_MS = 6000
     MONGODB_WAIT_QUEUE_MULTIPLE = 5000
 
+    # redis
+    # redis 配合session
+    REDIS_STORE = {
+        'redis_host': '127.0.0.1',
+        'redis_port': 6379,
+        'redis_pass': ''
+    }
+
     COOKIE_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+    SESSION_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+    SESSION_TIMEOUT = 60
     TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
     STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import session
 from tornado.web import RequestHandler
 
 from guitar.utils.tools import encode_json, decode_json
@@ -11,6 +12,10 @@ class BaseHandler(RequestHandler):
     __exception_handlers = {
         exc.APIRequestError: '_handle_api_error',
     }
+
+    def __init__(self, *args, **kwargs):
+        super(BaseHandler, self).__init__(*args, **kwargs)
+        self.session = session.Session(self.application.session_manager, self)
 
     def _handle_error(self, e):
         d = {
@@ -66,11 +71,7 @@ class BaseHandler(RequestHandler):
         self.write(chunk)
 
     def get_current_user(self):
-        user_json = self.get_secure_cookie('user')
-        if user_json:
-            return decode_json(user_json)
-        else:
-            return None
+        return self.session.get('nickname')
 
     def get_flash(self):
         flash = self.get_secure_cookie('flash')

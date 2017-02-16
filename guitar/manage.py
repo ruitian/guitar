@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import session
+
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 from tornado.httpclient import AsyncHTTPClient
@@ -31,6 +33,9 @@ class MyApplication(Application):
         settings = dict(
             debug=config.DEBUG,
             secret_key=config.SECRET_KEY,
+            session_secret=config.SESSION_SECRET,
+            session_timeout=config.SESSION_TIMEOUT,
+            store_options=config.REDIS_STORE,
             password_salt=config.SECURITY_PASSWORD_SALT,
             cookie_secret=config.COOKIE_SECRET,
             static_path=config.STATIC_PATH,
@@ -46,6 +51,10 @@ class MyApplication(Application):
         self.session = kwargs.pop('session')
         self.session.configure(bind=db_engine)
         Application.__init__(self, routes, **settings)
+        self.session_manager = session.SessionManager(
+            settings["session_secret"],
+            settings["store_options"],
+            settings["session_timeout"])
 
 
 def create_db():

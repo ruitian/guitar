@@ -104,12 +104,11 @@ class LoginHandler(BaseHandler):
             self.set_secure_cookie('flash', 'Login incorrect')
         else:
             if rv.confirmed:
-                self.session['nickname'] = rv.nickname
+                self.session.update(rv.to_dict())
                 self.session.save()
                 self.set_current_user(rv)
             else:
                 rv = {'msg': '账号还没有激活，请检查邮箱邮件', 'ret': -1002}
-        print self.session
         self.write_data(rv)
 
     def set_current_user(self, user):
@@ -131,10 +130,11 @@ class TokenHandler(BaseHandler):
     )
     def get(self):
         token = self.get_argument('token')
-        email = self.user_service.verify_email_token(token,
-                                                     self.application.settings['secret_key'],
-                                                     self.application.settings['password_salt']
-                                                    )
+        email = self.user_service.verify_email_token(
+            token,
+            self.application.settings['secret_key'],
+            self.application.settings['password_salt']
+            )
 
         if not email:
             rv = {'msg': '验证链接错误', 'ret': -1003}

@@ -141,3 +141,17 @@ class TokenHandler(BaseHandler):
         else:
             rv = self.user_service.update_user_state(email)
         self.write_data(rv)
+
+
+@route('/api/account/user')
+class CurrentUserHandler(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    def get(self):
+
+        if self.session:
+            self.write_data(self.session)
+        else:
+            self.write_data({'ret': -1, 'msg': '该用户没有登录'})

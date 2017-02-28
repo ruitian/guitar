@@ -16,4 +16,13 @@ class route(object):
     def get_routes(cls):
         return cls._routes
 
+from .base import BaseHandler
+
+
+@route('/')
+class IndexHandler(BaseHandler):
+
+    def get(self):
+        self.render('dist/index.html')
+
 from . import user  # noqa

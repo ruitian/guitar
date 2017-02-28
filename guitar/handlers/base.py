@@ -71,7 +71,10 @@ class BaseHandler(RequestHandler):
         self.write(chunk)
 
     def get_current_user(self):
-        return self.session.get('nickname')
+        return self.session.get('user')
+
+    def get_cookie_user(self):
+        return self.get_secure_cookie('user')
 
     def get_flash(self):
         flash = self.get_secure_cookie('flash')

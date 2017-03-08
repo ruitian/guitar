@@ -9,6 +9,8 @@ class UserModel(Base):
 
     __tablename__ = 'as_user'
     id = db.Column(db.Integer, primary_key=True)
+    # 用户唯一的ApeSo账号
+    uid = db.Column(db.String(10), index=True, unique=True)
     nickname = db.Column(
         db.String(64), index=True, nullable=False, unique=True)
     password = db.Column(db.String(256))

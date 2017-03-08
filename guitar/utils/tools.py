@@ -3,6 +3,7 @@ import json
 import bson
 import datetime
 import time
+from random import randint
 
 
 def _handler_object_for_json(obj):
@@ -33,3 +34,11 @@ def datetime2timestamp(dtime):
     if isinstance(dtime, datetime.datetime):
         return long(time.mktime(dtime.timetuple()))
     return dtime
+
+def generate_uid():
+    _alphanum = '0123456789'
+    uid = []
+    for i in range(0, 10):
+        uid.append(list(_alphanum)[randint(0, 9)])
+    uid = ''.join(uid)
+    return uid

@@ -5,6 +5,7 @@ from itsdangerous import URLSafeTimedSerializer
 
 from . import BaseService
 from guitar.models import UserModel
+from guitar.utils.tools import generate_uid
 
 
 class UserService(BaseService):
@@ -14,7 +15,17 @@ class UserService(BaseService):
         return [user.to_dict() for user in users]
 
     def create_user(self, arguments):
+        uid = 0
+        while True:
+            uid = generate_uid()
+            user = self.session.query(UserModel).filter(
+                UserModel.uid == uid).first()
+            if user is None:
+                uid = uid
+                break
+            continue
         user = UserModel(
+            uid=uid,
             nickname=arguments.get('nickname'),
             email=arguments.get('email'),
             password=generate_password_hash(

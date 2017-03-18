@@ -39,8 +39,10 @@ class UserHandler(BaseHandler):
     def initialize(self):
         self.user_service = UserService(self.application.session())
 
+    @tornado.web.authenticated
     def get(self):
         users = self.user_service.get_users()
+        print self.current_user
         self.write_data(users)
         self.finish()
 
@@ -91,6 +93,9 @@ class LoginHandler(BaseHandler):
 
     def initialize(self):
         self.user_service = UserService(self.application.session())
+
+    def get(self):
+        self.write_data({'ret': -1, 'msg': '该用户没有登录'})
 
     @vld.define_arguments(
         vld.Field('nickname_or_email', dtype=str, required=True),
@@ -148,7 +153,7 @@ class CurrentUserHandler(BaseHandler):
 
     def initialize(self):
         self.user_service = UserService(self.application.session())
-
+    @tornado.web.authenticated
     def get(self):
 
         if self.session:

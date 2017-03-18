@@ -24,7 +24,8 @@ class config:
     REDIS_STORE = {
         'redis_host': '127.0.0.1',
         'redis_port': 6379,
-        'redis_pass': ''
+        'redis_pass': '',
+        'redis_db': 2
     }
 
     COOKIE_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
@@ -32,6 +33,9 @@ class config:
     SESSION_TIMEOUT = 60 * 30
     TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
     STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
+
+    # code img temp
+    CODE_TEMP = os.path.join(os.path.dirname(__file__), 'static/temp')
 
     SECRET_KEY = 'you will never guess apeso'
     SECURITY_PASSWORD_SALT = 'never_guess_it'

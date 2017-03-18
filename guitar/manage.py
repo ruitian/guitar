@@ -7,6 +7,7 @@ from tornado.httpclient import AsyncHTTPClient
 from tornado.options import options, define, parse_command_line
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+from redis import Redis
 
 from guitar.handlers import route
 from guitar.config import config as conf
@@ -40,16 +41,24 @@ class MyApplication(Application):
             cookie_secret=config.COOKIE_SECRET,
             static_path=config.STATIC_PATH,
             template_path=config.TEMPLATE_PATH,
+            code_temp=config.CODE_TEMP,
             db_session=db_session,
             mail_server=config.MAIL_SERVER,
             mail_port=config.MAIL_PORT,
             mail_username=config.MAIL_USERNAME,
             mail_password=config.MAIL_PASSWORD,
             mail_use_ssl=config.MAIL_USE_SSL,
-            mail_default_sender=config.MAIL_DEFAULT_SENDER
+            mail_default_sender=config.MAIL_DEFAULT_SENDER,
+            login_url='/api/account/login'
         )
         self.session = kwargs.pop('session')
         self.session.configure(bind=db_engine)
+        self.db_redis = Redis(
+            host=settings['store_options']['redis_host'],
+            password=settings['store_options']['redis_pass'],
+            port=settings['store_options']['redis_port'],
+            db=settings['store_options']['redis_db']
+        )
         Application.__init__(self, routes, **settings)
         self.session_manager = session.SessionManager(
             settings["session_secret"],

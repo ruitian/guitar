@@ -23,15 +23,19 @@ class UserModel(Base):
     confirmed = db.Column(db.Boolean, default=False, nullable=False)
     confirmed_on = db.Column(
         db.TIMESTAMP, index=True, default=None, nullable=True)
+    # 绑定学生信息
+    is_bind_school = db.Column(db.Boolean, default=False, index=True)
     userinfo = relationship('UserinfoModel', backref=backref('user'))
 
     def to_dict(self):
         return dict(
+            uid=self.uid,
             nickname=self.nickname,
             email=self.email,
             phone_number=self.phone_number,
             portrait_url=self.portrait_url,
             registered_on=self.registered_on,
             confirmed=self.confirmed,
+            is_bind_school=self.is_bind_school,
             confirmed_on=self.confirmed_on
         )

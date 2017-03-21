@@ -160,3 +160,21 @@ class CurrentUserHandler(BaseHandler):
             self.write_data(self.session)
         else:
             self.write_data({'ret': -1, 'msg': '该用户没有登录'})
+
+
+@route('/api/account/nickname')
+class GetUserWithNicknameHandler(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    @vld.define_arguments(
+        vld.Field('nickname', dtype=str, required=True)
+    )
+    def post(self):
+        nickname = self.get_argument('nickname')
+        user = self.user_service.get_user_with_nickname(nickname)
+        if user is not None:
+            return self.write_data(user.nickname)
+        else:
+            return self.write_data({'ret': -1, 'msg': 'null'})

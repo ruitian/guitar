@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import session
 from tornado.web import RequestHandler
+from raven.contrib.tornado import SentryMixin
 
 from guitar.utils.tools import encode_json, decode_json
 from guitar import exc
 
 
-class BaseHandler(RequestHandler):
+class BaseHandler(SentryMixin, RequestHandler):
     __return__ = 'json'
     __error_code__ = 400
     __exception_handlers = {

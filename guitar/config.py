@@ -28,8 +28,8 @@ class config:
         'redis_db': 2
     }
 
-    COOKIE_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
-    SESSION_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+    # SESSION_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+    SECRET_KEY = 't64lk3XyQAuwtHvfbQNGAw7Drr7B+k35qqCkJ6NKqHs='
     SESSION_TIMEOUT = 60 * 30
     TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
     STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
@@ -37,7 +37,6 @@ class config:
     # code img temp
     CODE_TEMP = os.path.join(os.path.dirname(__file__), 'static/temp')
 
-    SECRET_KEY = 'you will never guess apeso'
     SECURITY_PASSWORD_SALT = 'never_guess_it'
     # mail
     MAIL_SERVER = 'smtp.ym.163.com'

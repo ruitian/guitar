@@ -7,6 +7,7 @@ from tornado.httpclient import AsyncHTTPClient
 from tornado.options import options, define, parse_command_line
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+from raven.contrib.tornado import AsyncSentryClient
 from redis import Redis
 
 from guitar.handlers import route
@@ -34,11 +35,11 @@ class MyApplication(Application):
         settings = dict(
             debug=config.DEBUG,
             secret_key=config.SECRET_KEY,
-            session_secret=config.SESSION_SECRET,
+            session_secret=config.SECRET_KEY,
             session_timeout=config.SESSION_TIMEOUT,
             store_options=config.REDIS_STORE,
             password_salt=config.SECURITY_PASSWORD_SALT,
-            cookie_secret=config.COOKIE_SECRET,
+            cookie_secret=config.SECRET_KEY,
             static_path=config.STATIC_PATH,
             template_path=config.TEMPLATE_PATH,
             code_temp=config.CODE_TEMP,
@@ -64,6 +65,10 @@ class MyApplication(Application):
             settings["session_secret"],
             settings["store_options"],
             settings["session_timeout"])
+        # sentry
+        self.sentry_client = AsyncSentryClient(
+            'http://ac79d38965af43bf8b283ea80cedad0c:3aeb9e2bdecf4955bc92e1d3b1e3ee0e@127.0.0.1:9000/2'
+        )
 
 
 def create_db():

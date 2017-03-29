@@ -73,6 +73,7 @@ class CrawlHandler(BaseHandler):
         self.application.db_redis.set(img_b64, cookies['ASP.NET_SessionId'])
         self.application.db_redis.set(cookies['ASP.NET_SessionId'], view_state)
         info = {
+            'ret': 0,
             'view_state': view_state,
             'code_img': img_b64
         }
@@ -123,7 +124,10 @@ class CrawlHandler(BaseHandler):
 
         req_url = 'http://%s/default5.aspx' % HOST
         target_url = 'http://{0}/xs_main.aspx?xh={1}'.format(HOST, stu_number)
-        response = requests.post(req_url, data=post_data, headers=headers, cookies=cookies)
+        try:
+            response = requests.post(req_url, data=post_data, headers=headers, cookies=cookies, timeout=5)
+        except:
+            return self.write_data({'ret': -1, 'msg': '网络错误'})
         # 判断登录成功
         if response.url == target_url:
             res = {
@@ -143,7 +147,10 @@ class CrawlHandler(BaseHandler):
                 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                               'Chrome/47.0.2526.111 Safari/537.36'
             }
-            page_response = requests.get(req_info_url, headers=headers, cookies=cookies)
+            try:
+                page_response = requests.get(req_info_url, headers=headers, cookies=cookies, timeout=5)
+            except:
+                return self.write_data({'ret': -1, 'msg': '网络错误'})
             tree = html.fromstring(page_response.content)
             # 学号
             lbl_xh = tree.xpath('//span[@id="lbl_xh"]/text()')[0]

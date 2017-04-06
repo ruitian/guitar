@@ -3,6 +3,7 @@ from . import route
 from .. import vld
 from .base import BaseHandler
 from guitar import config
+from guitar.services import StudentService
 
 import requests
 import base64
@@ -15,6 +16,9 @@ HOST = '210.44.176.229'
 
 @route('/api/crawl')
 class CrawlHandler(BaseHandler):
+
+    def initialize(self):
+        self.student_service = StudentService(self.application.session())
 
     def filter_string(self, ss_list):
         ll = []
@@ -163,7 +167,14 @@ class CrawlHandler(BaseHandler):
             # 班级
             lbl_xzb = tree.xpath('//span[@id="lbl_xzb"]/text()')[0]
             lbl_xh, lbl_xm, lbl_xy, lbl_xzb =  self.filter_string([lbl_xh, lbl_xm, lbl_xy, lbl_xzb])
-            print lbl_xh, lbl_xm, lbl_xy, lbl_zymc, lbl_xzb
+            student = {
+                'lbl_xh': lbl_xh,
+                'lbl_xm': lbl_xm,
+                'lbl_xy': lbl_xy,
+                'lbl_zymc': lbl_zymc,
+                'lbl_xzb': lbl_xzb
+            }
+            self.student_service.save_student_info(self.session['uid'], student)
         else:
             res = {
                 'ret': -1,

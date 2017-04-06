@@ -8,3 +8,4 @@ class BaseService(object):
 
 
 from .user import *
+from .student import *

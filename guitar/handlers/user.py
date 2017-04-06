@@ -110,8 +110,9 @@ class LoginHandler(BaseHandler):
         else:
             if rv.confirmed:
                 self.session.update(rv.to_dict())
-                self.session.save()
                 self.set_current_user(rv)
+                self.session.save()
+
             else:
                 rv = {'msg': '账号还没有激活，请检查邮箱邮件', 'ret': -1002}
         self.write_data(rv)
@@ -153,9 +154,9 @@ class CurrentUserHandler(BaseHandler):
 
     def initialize(self):
         self.user_service = UserService(self.application.session())
+
     @tornado.web.authenticated
     def get(self):
-
         if self.session:
             self.write_data(self.session)
         else:

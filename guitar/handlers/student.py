@@ -4,6 +4,7 @@ from .. import vld
 from .base import BaseHandler
 from guitar import config
 from guitar.services import StudentService
+from guitar.services import UserService
 
 import requests
 import base64
@@ -12,12 +13,15 @@ from lxml import html
 from random import randint
 
 
-HOST = '210.44.176.229'
+HOST = '210.44.176.59'
+
 
 @route('/api/crawl')
 class CrawlHandler(BaseHandler):
 
-    def initialize(self):
+    def __init__(self, *args, **kwargs):
+        super(CrawlHandler, self).__init__(*args, **kwargs)
+        self.user_service = UserService(self.application.session())
         self.student_service = StudentService(self.application.session())
 
     def filter_string(self, ss_list):
@@ -109,9 +113,9 @@ class CrawlHandler(BaseHandler):
             'Content-Length': '292',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Cookie': 'ASP.NET_SessionId=%s' % cookies['ASP.NET_SessionId'],
-            'Host': '210.44.176.229',
-            'Origin': 'http://210.44.176.229',
-            'Referer': 'http://210.44.176.229/',
+            'Host': HOST,
+            'Origin': 'http://%s' % HOST,
+            'Referer': 'http://%s/' % HOST,
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36'
         }
@@ -174,7 +178,16 @@ class CrawlHandler(BaseHandler):
                 'lbl_zymc': lbl_zymc,
                 'lbl_xzb': lbl_xzb
             }
-            self.student_service.save_student_info(self.session['uid'], student)
+            save_status = self.student_service.save_student_info(self.session['uid'], student)
+            if save_status is None:
+                res = {
+                    'ret': -1,
+                    'msg': '绑定失败'
+                }
+            # 保存成功后，修改绑定状态
+            else:
+                self.user_service.change_bind_school_status(self.session['uid'])
+
         else:
             res = {
                 'ret': -1,

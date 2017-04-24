@@ -11,12 +11,13 @@ class UserModel(Base):
     id = db.Column(db.Integer, primary_key=True)
     # 用户唯一的ApeSo账号
     uid = db.Column(db.String(10), index=True, unique=True)
+    openid = db.Column(db.String(128), index=True)
     nickname = db.Column(
-        db.String(64), index=True, nullable=False, unique=True)
+        db.String(64), index=True, unique=True)
     password = db.Column(db.String(256))
     email = db.Column(db.String(256), index=True, unique=True)
     phone_number = db.Column(db.String(11), index=True, unique=True)
-    portrait_url = db.Column(db.Text)  # 头像
+    avatar_url = db.Column(db.Text)  # 头像
     registered_on = db.Column(
         db.TIMESTAMP, index=True,
         server_default=db.func.current_timestamp())
@@ -30,10 +31,11 @@ class UserModel(Base):
     def to_dict(self):
         return dict(
             uid=self.uid,
+            openid=self.openid,
             nickname=self.nickname,
             email=self.email,
             phone_number=self.phone_number,
-            portrait_url=self.portrait_url,
+            avatar_url=self.avatar_url,
             registered_on=self.registered_on,
             confirmed=self.confirmed,
             is_bind_school=self.is_bind_school,

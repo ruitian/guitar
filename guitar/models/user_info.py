@@ -10,12 +10,16 @@ class UserinfoModel(Base):
     __tablename__ = 'as_user_info'
 
     id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.String(15), nullable=False, index=True, unique=True)
-    student_name = db.Column(db.String(64), nullable=False, index=True)
+    number = db.Column(db.String(15), index=True, unique=True)
+    student_name = db.Column(db.String(64), index=True)
     sex = db.Column(db.String(32), nullable=True, default=None)
-    school = db.Column(db.String(64), nullable=False, index=True)
-    acachemy = db.Column(db.String(256), nullable=False)
+    school = db.Column(db.String(64), index=True)
+    acachemy = db.Column(db.String(256))
     identity_card = db.Column(db.String(18), nullable=True, default=None)
+    # 微信部分
+    access_token = db.Column(db.String(128))
+    token_refresh = db.Column(db.String(128))
+    city = db.Column(db.String(128))
 
     user_id = db.Column(db.Integer, db.ForeignKey('as_user.id'))
 

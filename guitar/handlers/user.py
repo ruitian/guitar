@@ -13,6 +13,15 @@ import tornado
 from tornado_mail import Mail, Message
 from tornado.concurrent import Future
 
+import json
+from guitar.utils.fetch import rpc
+from tornado import gen
+
+# 微信配置
+APP_ID = 'wx59e1951717fc0bf4'
+APP_SECRET = 'fd98eb15684aa9a754be8b92e0ee3137'
+REDIRECT_URI = 'http%3a%2f%2f127.0.0.1%3a8080%2fverify'
+
 
 @tornado.gen.coroutine
 def send_confirm_mail(app, reciver, url):
@@ -42,7 +51,6 @@ class UserHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         users = self.user_service.get_users()
-        print self.current_user
         self.write_data(users)
         self.finish()
 
@@ -179,3 +187,62 @@ class GetUserWithNicknameHandler(BaseHandler):
             return self.write_data(user.nickname)
         else:
             return self.write_data({'ret': -1, 'msg': 'null'})
+
+
+@route('/api/login')
+class LoginProxy(BaseHandler):
+
+    def get(self):
+        url = 'https://open.weixin.qq.com/connect/oauth2/authorize?' \
+              'appid={0}&redirect_uri={1}&response_type=code&scope=snsapi_userinfo&state=1'.format(
+            APP_ID, REDIRECT_URI
+        )
+        self.set_status(302)
+        self.redirect(url)
+
+
+@route('/verify')
+class AccessTokenHandler(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    def set_current_user(self, user):
+        if user:
+            self.clear_cookie('flash')
+            self.set_secure_cookie('user', encode_json(user))
+        else:
+            self.clear_cookie('user')
+
+    # 获取access_token及user_info
+    @gen.coroutine
+    def get(self):
+        weixin_code = self.get_argument('code')
+
+        token_url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' \
+              'appid={0}&secret={1}&code={2}&grant_type=authorization_code'.format(
+            APP_ID, APP_SECRET, weixin_code
+        )
+
+        res = yield rpc('GET', token_url)
+        res_data = json.loads(res.body)
+
+        info_url = 'https://api.weixin.qq.com/sns/userinfo?access_token={0}&openid={1}&lang=zh_CN'.format(
+            res_data['access_token'], res_data['openid']
+        )
+        user_info_data = yield rpc('GET', info_url)
+        user_info = json.loads(user_info_data.body)
+        user_info.update(
+            res_data
+        )
+        self.user_service.save_weixin_info(user_info)
+
+        # 成功后初始化session
+        rv = self.user_service.get_user_with_openid(user_info['openid'])
+        self.session.update(rv.to_dict())
+        self.set_current_user(rv)
+        self.session.save()
+
+        # 保存信息之后进行跳转
+        self.set_status(301)
+        self.redirect('http://127.0.0.1:8082')

@@ -4,7 +4,7 @@ from werkzeug import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 
 from . import BaseService
-from guitar.models import UserModel
+from guitar.models import UserModel, UserinfoModel
 from guitar.utils.tools import generate_uid
 
 
@@ -61,6 +61,17 @@ class UserService(BaseService):
         else:
             return user
 
+    # 根据微信openid获取用户信息
+    def get_user_with_openid(self, openid):
+        user = self.session.query(UserModel).filter(
+            UserModel.openid == openid).first()
+        self.session.close()
+
+        if user is None:
+            return None
+        else:
+            return user
+
     def get_one_user(self, arguments):
         nickname_or_email = arguments.get('nickname_or_email')
         password = arguments.get('password')
@@ -101,3 +112,45 @@ class UserService(BaseService):
         self.session.add(user)
         self.session.commit()
         return user and user.to_dict()
+
+    # 更改绑定学生信息状态
+    def change_bind_school_status(self, uid):
+        user = self.session.query(UserModel).filter(
+            UserModel.uid == uid).first()
+        user.is_bind_school = True
+        self.session.add(user)
+        self.session.commit()
+
+    # 用户第一次登陆应用
+    # 保存微信的用户信息
+    def save_weixin_info(self, user_info={}):
+        # 先保存uid
+        uid = 0
+        while True:
+            uid = generate_uid()
+            user = self.session.query(UserModel).filter(
+                UserModel.uid == uid).first()
+            if user is None:
+                uid = uid
+                break
+            continue
+        user = UserModel(
+            confirmed=True,
+            uid=uid,
+            openid=user_info['openid'],
+            avatar_url=user_info['headimgurl'].encode('utf8'),
+            nickname=user_info['nickname'].encode('utf8')
+        )
+        self.session.add(user)
+        self.session.commit()
+
+        userInfo = self.session.query(UserinfoModel).filter(
+            UserinfoModel.user == user).first()
+        if userInfo is None:
+            info = UserinfoModel(
+                access_token=user_info['access_token'],
+                token_refresh=user_info['refresh_token'],
+                city=user_info['city'].encode('utf8'),
+            )
+            self.session.add(info)
+            self.session.commit()

@@ -235,7 +235,12 @@ class AccessTokenHandler(BaseHandler):
         user_info.update(
             res_data
         )
-        self.user_service.save_weixin_info(user_info)
+
+        # 检查用户是否是第一次登录
+        user = self.user_service.get_user_with_openid(user_info['openid'])
+
+        if user is None:
+            self.user_service.save_weixin_info(user_info)
 
         # 成功后初始化session
         rv = self.user_service.get_user_with_openid(user_info['openid'])

@@ -81,3 +81,10 @@ class BaseHandler(SentryMixin, RequestHandler):
         flash = self.get_secure_cookie('flash')
         self.clear_cookie('flash')
         return flash
+
+    def set_current_user(self, user):
+        if user:
+            self.clear_cookie('flash')
+            self.set_secure_cookie('user', encode_json(user))
+        else:
+            self.clear_cookie('user')

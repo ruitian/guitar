@@ -125,13 +125,6 @@ class LoginHandler(BaseHandler):
                 rv = {'msg': '账号还没有激活，请检查邮箱邮件', 'ret': -1002}
         self.write_data(rv)
 
-    def set_current_user(self, user):
-        if user:
-            self.clear_cookie('flash')
-            self.set_secure_cookie('user', encode_json(user))
-        else:
-            self.clear_cookie('user')
-
 
 @route('/api/account/verify')
 class TokenHandler(BaseHandler):
@@ -206,13 +199,6 @@ class AccessTokenHandler(BaseHandler):
 
     def initialize(self):
         self.user_service = UserService(self.application.session())
-
-    def set_current_user(self, user):
-        if user:
-            self.clear_cookie('flash')
-            self.set_secure_cookie('user', encode_json(user))
-        else:
-            self.clear_cookie('user')
 
     # 获取access_token及user_info
     @gen.coroutine

@@ -61,6 +61,16 @@ class UserService(BaseService):
         else:
             return user
 
+    def get_user_with_uid(self, uid):
+        user = self.session.query(UserModel).filter(
+            UserModel.uid == uid).first()
+        self.session.close()
+
+        if user is None:
+            return None
+        else:
+            return user
+
     # 根据微信openid获取用户信息
     def get_user_with_openid(self, openid):
         user = self.session.query(UserModel).filter(
@@ -151,6 +161,7 @@ class UserService(BaseService):
                 access_token=user_info['access_token'],
                 token_refresh=user_info['refresh_token'],
                 city=user_info['city'].encode('utf8'),
+                user=user
             )
             self.session.add(info)
             self.session.commit()

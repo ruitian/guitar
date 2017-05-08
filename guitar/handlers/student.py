@@ -11,6 +11,7 @@ import base64
 import shutil
 from lxml import html
 from random import randint
+from tornado.web import authenticated
 
 
 HOST = '210.44.176.59'
@@ -187,6 +188,11 @@ class CrawlHandler(BaseHandler):
             # 保存成功后，修改绑定状态
             else:
                 self.user_service.change_bind_school_status(self.session['uid'])
+                # 更新session
+                rv = self.user_service.get_user_with_uid(self.session['uid'])
+                self.session.update(rv.to_dict())
+                self.set_current_user(rv)
+                self.session.save()
 
         else:
             res = {
@@ -195,3 +201,22 @@ class CrawlHandler(BaseHandler):
             }
 
         self.write_data(res)
+
+
+@authenticated
+@route('/api/account/student')
+class GetStudentHandler(BaseHandler):
+
+    def initialize(self):
+        self.student_service = StudentService(self.application.session())
+
+    @vld.define_arguments(
+        vld.Field('uid', dtype=str, required=True),
+    )
+    def post(self):
+        uid = self.get_argument('uid')
+        student_info = self.student_service.get_student_info(uid)
+        if student_info is None:
+            self.write_data({'msg': '未绑定学校', 'ret': -1})
+        else:
+            self.write_data(student_info)

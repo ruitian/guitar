@@ -42,3 +42,9 @@ class StudentService(BaseService):
         student_info = self.session.query(UserinfoModel).filter(
             UserinfoModel.user==user).first()
         return student_info.to_dict()
+
+    # 根据学号查询信息
+    def get_student_by_number(self, number):
+        student = self.session.query(UserinfoModel).filter(
+            UserinfoModel.number==number).first()
+        return student

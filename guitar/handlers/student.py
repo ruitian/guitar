@@ -103,6 +103,10 @@ class CrawlHandler(BaseHandler):
         cookies = self.application.db_redis.get(check_b64)
         view_state = self.application.db_redis.get(cookies)
 
+        # 判断该信息是否被绑定
+        student = self.student_service.get_student_by_number(stu_number)
+        if student is not None:
+            return self.write_data({'ret': -1, 'msg': '该账号已经被绑定!'})
         # 重组cookie及header
         cookies = dict({'ASP.NET_SessionId': cookies})
         headers = {

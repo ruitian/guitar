@@ -126,6 +126,15 @@ class LoginHandler(BaseHandler):
         self.write_data(rv)
 
 
+@route('/api/account/logout')
+class LogoutHandler(BaseHandler):
+
+    def post(self):
+        self.session.clear()
+        self.session.save()
+        rv = {'msg': '已登出', 'ret': 0}
+        self.write_data(rv)
+
 @route('/api/account/verify')
 class TokenHandler(BaseHandler):
 

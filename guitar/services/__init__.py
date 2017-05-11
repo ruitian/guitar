@@ -9,3 +9,4 @@ class BaseService(object):
 
 from .user import *
 from .student import *
+from .tag import *

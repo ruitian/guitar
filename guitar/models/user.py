@@ -3,6 +3,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import relationship, backref
 
 from . import Base
+from .relations import UserTag
 
 
 class UserModel(Base):
@@ -28,8 +29,17 @@ class UserModel(Base):
     is_bind_school = db.Column(db.Boolean, default=False, index=True)
     userinfo = relationship('UserinfoModel', backref=backref('user'))
 
+    # tag 标签
+    tags = relationship(
+        'UserTag',
+        foreign_keys=[UserTag.user_id],
+        backref=backref('users', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+
     def to_dict(self):
         return dict(
+            id=self.id,
             uid=self.uid,
             openid=self.openid,
             nickname=self.nickname,

@@ -26,4 +26,5 @@ class IndexHandler(BaseHandler):
         self.render('dist/index.html')
 
 from . import user  # noqa
-from . import student
+from . import student  # noqa
+from . import tag  # noqa

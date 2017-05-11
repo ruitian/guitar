@@ -89,6 +89,6 @@ class BaseHandler(SentryMixin, RequestHandler):
     #     else:
     #         self.clear_cookie('user')
 
-    def =(self, user):
+    def set_current_user(self, user):
         self.session.update(user.to_dict())
         self.session.save()

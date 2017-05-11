@@ -30,7 +30,7 @@ class config:
 
     # SESSION_SECRET = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
     SECRET_KEY = 't64lk3XyQAuwtHvfbQNGAw7Drr7B+k35qqCkJ6NKqHs='
-    SESSION_TIMEOUT = 60 * 30
+    SESSION_TIMEOUT = 60 * 60 * 24 * 30
     TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
     STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
 

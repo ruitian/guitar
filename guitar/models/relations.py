@@ -22,3 +22,14 @@ class UserTag(Base):
         return dict(
             user_id=self.user_id,
             tag_id=self.tag_id)
+
+
+# 用户互相关注关系表
+class Follow(Base):
+
+    __tablename__ = 'as_follows'
+
+    follower_id = db.Column(db.Integer, db.ForeignKey('as_user.id'), primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('as_user.id'), primary_key=True)
+    timestamp =  db.Column(
+        db.TIMESTAMP, index=True, server_default=db.func.current_timestamp(), nullable=True)

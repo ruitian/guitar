@@ -3,7 +3,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import relationship, backref
 
 from . import Base
-from .relations import UserTag
+from .relations import UserTag, Follow
 
 
 class UserModel(Base):
@@ -36,6 +36,22 @@ class UserModel(Base):
         backref=backref('users', lazy='joined'),
         lazy='dynamic',
         cascade='all, delete-orphan')
+
+    # 关注者
+    followed = relationship(
+        'Follow',
+        foreign_keys=[Follow.follower_id],
+        backref=backref('follower', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
+    followers = relationship(
+        'Follow',
+        foreign_keys=[Follow.followed_id],
+        backref=backref('followed', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
 
     def to_dict(self):
         return dict(

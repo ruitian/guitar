@@ -8,3 +8,4 @@ from .user import UserModel  # noqa
 from .user_info import UserinfoModel  # noqa
 from .tag import TagModel  # noqa
 from .relations import *  # noqa
+from .dynamics import *  # noqa

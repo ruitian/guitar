@@ -191,6 +191,48 @@ class GetUserWithNicknameHandler(BaseHandler):
             return self.write_data({'ret': -1, 'msg': 'null'})
 
 
+# 动态上传图片
+@route('/api/upload')
+class UploadImg(BaseHandler):
+
+    def post(self):
+        file_metas = self.request.files['file']
+        for meta in file_metas:
+            filename = meta['filename']
+            print filename
+
+        rv = {
+            'src': '123'
+        }
+        self.write_data(rv)
+
+
+# 获取周边位置信息
+@route('/api/address/around')
+class AddressHandler(BaseHandler):
+
+    @vld.define_arguments(
+        vld.Field('location', dtype=str, required=True),
+        vld.Field('offset', dtype=int, required=True),
+        vld.Field('page', dtype=int, required=True)
+    )
+    @gen.coroutine
+    def get(self):
+        location = self.get_argument('location')
+        offset = self.get_argument('offset')
+        page = self.get_argument('page')
+        url = '{0}&location={1}&output=JSON&radius=10000&types={2}&offset={3}&page={4}'.format(
+            'http://restapi.amap.com/v3/place/around?key=f58861dd943767561fb7c45e6bb7f1e1',
+            location,
+            '餐饮服务|购物服务|生活服务|体育休闲服务|医疗保健服务|住宿服务|风景名胜|商务住宅|政府机构及社会团体|'
+            '科教文化服务|交通设施服务|金融保险服务|公司企业|道路附属设施|地名地址信息|公共设施',
+            offset,
+            page
+        )
+        response = yield rpc('GET', url)
+        self.write(response.body)
+
+
 @route('/api/login')
 class LoginProxy(BaseHandler):
 

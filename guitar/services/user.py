@@ -4,7 +4,7 @@ from werkzeug import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 
 from . import BaseService
-from guitar.models import UserModel, UserinfoModel
+from guitar.models import UserModel, UserinfoModel, DynamicModel
 from guitar.utils.tools import generate_uid
 
 
@@ -165,3 +165,22 @@ class UserService(BaseService):
             )
             self.session.add(info)
             self.session.commit()
+
+    # 发表动态
+    def publish_dynamic(self, uid, dynamic_content):
+        user = self.session.query(UserModel).filter_by(
+            uid=uid).first()
+        dynamic = DynamicModel(
+            content=dynamic_content['dynamicContent'],
+            address_name=dynamic_content['addressName'],
+            address_city=dynamic_content['addressCity'],
+            img_url=dynamic_content['img_url'],
+            user=user
+        )
+        try:
+            self.session.add(dynamic)
+            self.session.commit()
+        except:
+            self.session.rollback()
+        else:
+            return True

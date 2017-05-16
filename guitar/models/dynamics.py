@@ -16,7 +16,9 @@ class DynamicModel(Base):
     # 动态图片地址
     img_url = db.Column(db.Text, default=None)
     # 定位地址
-    address = db.Column(db.Text, default=None)
+    address_name = db.Column(db.Text, default=None)
+    address_city = db.Column(db.Text, default=None)
+
     create_on = db.Column(
         db.TIMESTAMP, index=True, server_default=db.func.current_timestamp(), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('as_user.id'))

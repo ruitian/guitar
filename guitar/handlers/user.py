@@ -14,6 +14,7 @@ from tornado_mail import Mail, Message
 from tornado.concurrent import Future
 
 import json
+import os
 from guitar.utils.fetch import rpc
 from tornado import gen
 
@@ -195,17 +196,58 @@ class GetUserWithNicknameHandler(BaseHandler):
 @route('/api/upload')
 class UploadImg(BaseHandler):
 
+    global img_list
+    img_list = []
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
     def post(self):
+        global img_list
         file_metas = self.request.files['file']
+        upload_path = self.application.settings.get('static_path') + '/img'
+        filename = ''
         for meta in file_metas:
             filename = meta['filename']
-            print filename
+            file_path = os.path.join(upload_path, filename)
+            with open(file_path, 'wb') as up:  # 有些文件需要已二进制的形式存储，实际中可以更改
+                up.write(meta['body'])
+                img_list.append(filename)
 
-        rv = {
-            'src': '123'
+        self.write_data({'src': '/img/'+filename})
+
+    def get(self):
+        self.delete_temp_img()
+
+    # 发布动态
+    def put(self):
+        global img_list
+        dynamicContent = self.get_argument('dynamicContent')
+        addressName = self.get_argument('addressName')
+        addressCity = self.get_argument('addressCity')
+        img_url = ','.join(img_list)
+        data = {
+            'dynamicContent': dynamicContent,
+            'addressName': addressName,
+            'addressCity': addressCity,
+            'img_url': img_url
         }
-        self.write_data(rv)
+        user = self.get_current_user()
+        if self.user_service.publish_dynamic(user['uid'], data):
+            self.write_data({'ret': 0, 'msg': '发表成功！'})
+        else:
+            self.write_data({'ret': 0, 'msg': '发表失败！'})
 
+    def delete_temp_img(self):
+        global img_list
+        if not img_list:
+            return
+        else:
+            for img in img_list:
+                img_path = self.application.settings['static_path'] + '/img/' + img
+                if os.path.exists(img_path):
+                    os.remove(img_path)
+            img_list = []
 
 # 获取周边位置信息
 @route('/api/address/around')

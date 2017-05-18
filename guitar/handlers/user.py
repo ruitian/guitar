@@ -14,7 +14,7 @@ from tornado_mail import Mail, Message
 from tornado.concurrent import Future
 
 import json
-import os
+import os, shutil
 from guitar.utils.fetch import rpc
 from tornado import gen
 
@@ -232,6 +232,10 @@ class UploadImg(BaseHandler):
             'addressCity': addressCity,
             'img_url': img_url
         }
+        for url in img_list:
+            old_path = self.application.settings['static_path'] + '/img/' + url
+            new_path = self.application.settings['static_path'] + '/dynamic_img/' + url
+            shutil.copyfile(old_path, new_path)
         user = self.get_current_user()
         if self.user_service.publish_dynamic(user['uid'], data):
             self.write_data({'ret': 0, 'msg': '发表成功！'})

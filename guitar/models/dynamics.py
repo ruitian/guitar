@@ -28,6 +28,7 @@ class DynamicModel(Base):
             id=self.id,
             content=self.content,
             img_url=self.img_url,
-            address=self.address,
+            address_name=self.address_name,
+            address_city=self.address_city,
             create_on=self.create_on
         )

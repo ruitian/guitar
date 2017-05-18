@@ -28,3 +28,4 @@ class IndexHandler(BaseHandler):
 from . import user  # noqa
 from . import student  # noqa
 from . import tag  # noqa
+from . import dynamic  # noqa

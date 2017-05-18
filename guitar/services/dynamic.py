@@ -18,3 +18,17 @@ class DynamicService(BaseService):
         for dynamic in dynamics:
             dynamic.img_url = dynamic.img_url.split(',')
         return [dynamic.to_dict() for dynamic in dynamics]
+
+    def delete_one_dynamic(self, uid, did):
+        user = self.session.query(UserModel).filter_by(
+            uid=uid
+        ).first()
+        dynamic = self.session.query(DynamicModel)\
+            .filter_by(user=user, id=did).first()
+        try:
+            self.session.delete(dynamic)
+            self.session.commit()
+        except:
+            self.session.rollback()
+        else:
+            return True

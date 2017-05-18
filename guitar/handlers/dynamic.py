@@ -27,3 +27,16 @@ class GetMyDynamicHandler(BaseHandler):
         user = self.get_current_user()
         dynamics = self.dynamic_service.get_my_dynamic(user['uid'], offset, limit)
         self.write_data(dynamics)
+
+    @authenticated
+    @vld.define_arguments(
+        vld.Field('did', dtype=int, required=True)
+    )
+    def post(self):
+        did = self.get_argument('did')
+        user = self.get_current_user()
+        if self.dynamic_service.delete_one_dynamic(user['uid'], did):
+            self.write_data({'ret': 0, 'msg': '删除成功'})
+        else:
+            self.set_status(400)
+            self.write_data({'ret': -1, 'msg': '删除失败'})

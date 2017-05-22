@@ -23,7 +23,7 @@ define(
     help='Database connection string for application')
 
 db_engine = create_engine(options.db_connection_str)
-db_session = sessionmaker()
+db_session = sessionmaker(autoflush=False)
 AsyncHTTPClient.configure('tornado.simple_httpclient\
 .SimpleAsyncHTTPClient', max_clients=3)
 

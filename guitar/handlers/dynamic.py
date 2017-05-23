@@ -40,3 +40,17 @@ class GetMyDynamicHandler(BaseHandler):
         else:
             self.set_status(400)
             self.write_data({'ret': -1, 'msg': '删除失败'})
+
+
+# 获取所有的动态信息
+@route('/api/dynamic/all')
+class GetAllDynamic(BaseHandler):
+    def initialize(self):
+        self.dynamic_service = DynamicService(self.application.session())
+
+    @authenticated
+    def get(self):
+        offset = self.get_argument('offset', 0)
+        limit = self.get_argument('limit', 15)
+        data = self.dynamic_service.get_all_dynamic(offset, limit)
+        self.write_data(data)

@@ -32,3 +32,16 @@ class DynamicService(BaseService):
             self.session.rollback()
         else:
             return True
+
+    # 获取所有的动态信息
+    def get_all_dynamic(self, offset, limit):
+        resp_list = []
+        dynamics = self.session.query(DynamicModel)\
+            .order_by(DynamicModel.create_on.desc())\
+            .offset(offset)\
+            .limit(limit)\
+            .all()
+        for dynamic in dynamics:
+            dynamic.img_url = dynamic.img_url.split(',')
+
+        return [dynamic.to_dict() for dynamic in dynamics]

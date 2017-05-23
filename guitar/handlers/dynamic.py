@@ -2,15 +2,8 @@
 from . import route
 from .. import vld
 from .base import BaseHandler
-from guitar import config
-from guitar.services import StudentService
 from guitar.services import DynamicService
 
-import requests
-import base64
-import shutil
-from lxml import html
-from random import randint
 from tornado.web import authenticated
 
 
@@ -54,3 +47,29 @@ class GetAllDynamic(BaseHandler):
         limit = self.get_argument('limit', 15)
         data = self.dynamic_service.get_all_dynamic(offset, limit)
         self.write_data(data)
+
+
+# 动态点赞
+@route('/api/dynamic/praise')
+class PraiseDynamic(BaseHandler):
+
+    def initialize(self):
+        self.dynamic_service = DynamicService(self.application.session())
+
+    @authenticated
+    def post(self):
+        user = self.get_current_user()
+        dynamic_id = self.get_argument('did')
+        if self.dynamic_service.praise_dynamic(user['id'], dynamic_id):
+            self.write_data({'ret': 0, 'msg': '已点赞'})
+        else:
+            self.write_data({'ret': -1, 'msg': '重复点赞'})
+
+    @authenticated
+    def delete(self):
+        user = self.get_current_user()
+        dynamic_id = self.get_argument('did')
+        if self.dynamic_service.cancel_praise(user['id'], dynamic_id):
+            self.write_data({'ret': 0, 'msg': '已取消'})
+        else:
+            self.write_data({'ret': -1, 'msg': '取消失败'})

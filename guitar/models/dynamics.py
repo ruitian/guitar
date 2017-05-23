@@ -23,12 +23,18 @@ class DynamicModel(Base):
         db.TIMESTAMP, index=True, server_default=db.func.current_timestamp(), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('as_user.id'))
 
+    # 点赞
+    dynamic_praise = relationship('PraiseModel', backref=backref('dynamic'))
+
     def to_dict(self):
-        return dict(
-            id=self.id,
-            content=self.content,
-            img_url=self.img_url,
-            address_name=self.address_name,
-            address_city=self.address_city,
-            create_on=self.create_on
-        )
+        if hasattr(self, 'praises'):
+            return dict(
+                id=self.id,
+                content=self.content,
+                img_url=self.img_url,
+                address_name=self.address_name,
+                address_city=self.address_city,
+                create_on=self.create_on,
+                user=self.user,
+                praises=self.praises
+            )

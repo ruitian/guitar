@@ -7,6 +7,7 @@ from tornado.httpclient import AsyncHTTPClient
 from tornado.options import options, define, parse_command_line
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+from sqlalchemy.pool import NullPool
 from raven.contrib.tornado import AsyncSentryClient
 from redis import Redis
 
@@ -22,7 +23,7 @@ define(
     'db_connection_str', default='mysql://root@localhost/apeso',
     help='Database connection string for application')
 
-db_engine = create_engine(options.db_connection_str)
+db_engine = create_engine(options.db_connection_str, pool_size=30)
 db_session = sessionmaker(autoflush=False)
 AsyncHTTPClient.configure('tornado.simple_httpclient\
 .SimpleAsyncHTTPClient', max_clients=3)

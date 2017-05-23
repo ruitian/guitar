@@ -27,8 +27,11 @@ class UserModel(Base):
         db.TIMESTAMP, index=True, default=None, nullable=True)
     # 绑定学生信息
     is_bind_school = db.Column(db.Boolean, default=False, index=True)
-    userinfo = relationship('UserinfoModel', backref=backref('user'))
-    user_dynamic = relationship('DynamicModel', backref=backref('user'), lazy='dynamic')
+    userinfo = relationship('UserinfoModel', backref='user', uselist=False)
+    # # 用户动态
+    dynamic = relationship('DynamicModel', backref='user')
+    # 点赞
+    user_praise = relationship('PraiseModel', backref=backref('user'), lazy='dynamic')
 
     # tag 标签
     tags = relationship(

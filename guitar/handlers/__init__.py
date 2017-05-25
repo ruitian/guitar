@@ -29,3 +29,4 @@ from . import user  # noqa
 from . import student  # noqa
 from . import tag  # noqa
 from . import dynamic  # noqa
+from . import chat  # noqa

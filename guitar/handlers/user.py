@@ -51,7 +51,7 @@ class UserHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self):
-        users = self.user_service.get_users()
+        users = self.user_service.get_users(self.get_current_user()['id'])
         self.write_data(users)
         self.finish()
 
@@ -183,6 +183,7 @@ class GetUserWithNicknameHandler(BaseHandler):
     @vld.define_arguments(
         vld.Field('nickname', dtype=str, required=True)
     )
+    @tornado.web.authenticated
     def post(self):
         nickname = self.get_argument('nickname')
         user = self.user_service.get_user_with_nickname(nickname)
@@ -191,6 +192,28 @@ class GetUserWithNicknameHandler(BaseHandler):
         else:
             return self.write_data({'ret': -1, 'msg': 'null'})
 
+# 根据ApeSo账号ID获取用户资料
+@route('/api/account/uid')
+class GetUserWithId(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    @vld.define_arguments(
+        vld.Field('uid', dtype=int, required=True)
+    )
+    @tornado.web.authenticated
+    def post(self):
+        uid = self.get_argument('uid')
+        user = self.user_service.get_user_with_uid(uid)
+        if user is not None:
+            return self.write_data({
+                'uid': user.uid,
+                'avatarUrl': user.avatar_url,
+                'nickName': user.nickname
+            })
+        else:
+            return self.write_data({'ret': -1, 'msg': 'null'})
 
 # 动态上传图片
 @route('/api/upload')

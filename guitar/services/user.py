@@ -10,8 +10,10 @@ from guitar.utils.tools import generate_uid
 
 class UserService(BaseService):
 
-    def get_users(self):
-        users = self.session.query(UserModel).all()
+    def get_users(self, id):
+        users = self.session.query(UserModel).filter(
+            UserModel.id!=id,
+        ).all()
         return [user.to_dict() for user in users]
 
     def create_user(self, arguments):

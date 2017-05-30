@@ -17,7 +17,10 @@ class SocketHandler(WebSocketHandler):
         return True
 
     key = ''
-
+    @vld.define_arguments(
+        vld.Field('from', required=True),
+        vld.Field('to', required=True)
+    )
     def open(self, *args):
         chat_from = self.get_argument('from')
         chat_to = self.get_argument('to')

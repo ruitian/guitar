@@ -73,6 +73,19 @@ class UserService(BaseService):
         else:
             return user
 
+    def get_user_with_aid(self, uid):
+        user = self.session.query(UserModel).filter(
+            UserModel.uid == uid).first()
+
+        if user is None:
+            return None
+        else:
+            user_info = self.session.query(UserinfoModel).filter(
+                UserinfoModel.user == user).first()
+            self.session.close()
+            return user, user_info
+
+
     # 根据微信openid获取用户信息
     def get_user_with_openid(self, openid):
         user = self.session.query(UserModel).filter(

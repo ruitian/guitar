@@ -215,6 +215,27 @@ class GetUserWithId(BaseHandler):
         else:
             return self.write_data({'ret': -1, 'msg': 'null'})
 
+# apeso id 简写 aid
+@route('/api/account/aid')
+class GetUserWithUid(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    @vld.define_arguments(
+        vld.Field('aid', dtype=int, required=True)
+    )
+    @tornado.web.authenticated
+    def post(self):
+        aid = self.get_argument('aid')
+        user, user_info = self.user_service.get_user_with_aid(aid)
+        user = user.to_dict()
+        user.update(user_info.to_dict())
+        if user is not None:
+            return self.write_data(user)
+        else:
+            return self.write_data({'ret': -1, 'msg': 'null'})
+
 # 动态上传图片
 @route('/api/upload')
 class UploadImg(BaseHandler):

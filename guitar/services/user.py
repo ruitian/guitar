@@ -4,7 +4,7 @@ from werkzeug import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 
 from . import BaseService
-from guitar.models import UserModel, UserinfoModel, DynamicModel
+from guitar.models import UserModel, UserinfoModel, DynamicModel, Follow
 from guitar.utils.tools import generate_uid
 
 
@@ -199,3 +199,52 @@ class UserService(BaseService):
             self.session.rollback()
         else:
             return True
+
+    # 判读是否关注
+    def is_following(self, user):
+        return self.session.query(Follow).filter_by(
+            followed_id=user.id).first() is not None
+
+    # 判断
+    def is_following_by(self, user):
+        return self.session.query(Follow).filter_by(
+            follower_id=user.id).first() is not None
+
+    # 获取用户自己的关注列表
+    def get_followed_user(self, id):
+        user = self.session.query(UserModel).filter_by(
+            id=id).first()
+        return user.followed.all()
+
+    def follow(self, follower_id, followed_id):
+        follower = self.session.query(UserModel).filter_by(
+            id=follower_id).first()
+        followed = self.session.query(UserModel).filter_by(
+            id=followed_id).first()
+        if not self.is_following(followed):
+            f = Follow(follower=follower, followed=followed)
+            self.session.add(f)
+            try:
+                self.session.commit()
+            except:
+                self.session.rollback()
+            else:
+                return True
+
+    def unfollow(self, follower_id, followed_id):
+        f = self.session.query(Follow).filter_by(
+            follower_id=follower_id, followed_id=followed_id).first()
+        if f:
+            self.session.delete(f)
+            try:
+                self.session.commit()
+            except:
+                self.session.rollback()
+            else:
+                return True
+
+    # 计算粉丝数和关注数
+    def get_follow_count(self, user_id):
+        user = self.session.query(UserModel).filter_by(
+            id=user_id).first()
+        return user.followed.count(), user.followers.count()

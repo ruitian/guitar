@@ -229,8 +229,12 @@ class GetUserWithUid(BaseHandler):
     def post(self):
         aid = self.get_argument('aid')
         user, user_info = self.user_service.get_user_with_aid(aid)
+        follow_status = {
+            'isFollowing': self.user_service.is_following(user)
+        }
         user = user.to_dict()
         user.update(user_info.to_dict())
+        user.update(follow_status)
         if user is not None:
             return self.write_data(user)
         else:
@@ -378,3 +382,55 @@ class AccessTokenHandler(BaseHandler):
         # 保存信息之后进行跳转
         self.set_status(301)
         self.redirect('http://127.0.0.1:8082')
+
+
+# 关注新的朋友
+@route('/api/account/follow')
+class FollowUser(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    # 获取所有关注的朋友
+    def get(self):
+        followers = self.user_service.get_followed_user(self.get_current_user()['id'])
+        self.write_data([follower.followed.to_dict() for follower in followers])
+
+    # 添加新的关注
+    @vld.define_arguments(
+        vld.Field('followed_id', required=True)
+    )
+    def post(self):
+        followed_id = self.get_argument('followed_id')
+        follower_id = self.get_current_user()['id']
+        if self.user_service.follow(follower_id, followed_id):
+            self.write_data({'msg': '已加入关注列表', 'ret': 0})
+        else:
+            self.write_data({'msg': '网络错误', 'ret': -1})
+
+    # 删除一条关注
+    @vld.define_arguments(
+        vld.Field('followed_id', required=True)
+    )
+    def delete(self):
+        followed_id = self.get_argument('followed_id')
+        follower_id = self.get_current_user()['id']
+        if self.user_service.unfollow(follower_id, followed_id):
+            self.write_data({'msg': '以从关注列表中移除', 'ret': 0})
+        else:
+            self.write_data({'msg': '网络错误', 'ret': -1})
+
+
+@route('/api/account/follow/count')
+class FollowUserCount(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    def get(self):
+        # 关注  粉丝
+        followed, followers = self.user_service.get_follow_count(self.get_current_user()['id'])
+        self.write_data({
+            'followed': followed,
+            'followers': followers
+        })

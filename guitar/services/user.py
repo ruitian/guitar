@@ -12,8 +12,16 @@ class UserService(BaseService):
 
     def get_users(self, id):
         users = self.session.query(UserModel).filter(
-            UserModel.id!=id,
+            UserModel.id!=id
         ).all()
+        return [user.to_dict() for user in users]
+
+    def get_user_of_one(self, offset, limit):
+        users = self.session.query(UserModel)\
+            .filter(UserModel.id!=id)\
+            .offset(offset)\
+            .limit(limit)\
+            .all()
         return [user.to_dict() for user in users]
 
     def create_user(self, arguments):
@@ -110,6 +118,19 @@ class UserService(BaseService):
             return user
         else:
             return None
+
+    # 插入邮箱
+    def set_user_email(self, id, email):
+        user = self.session.query(UserModel).filter_by(
+            id=id).first()
+        user.email = email
+        try:
+            self.session.add(user)
+            self.session.commit()
+        except:
+            self.session.rollback()
+        else:
+            return True
 
     def generate_confirmation_token(self, email, secret, password_salt):
         serializer = URLSafeTimedSerializer(secret)
@@ -215,6 +236,13 @@ class UserService(BaseService):
         user = self.session.query(UserModel).filter_by(
             id=id).first()
         return user.followed.all()
+
+    # 查找用户
+    def search_user(self, keyword):
+        users = self.session.query(UserModel).filter(
+            UserModel.nickname.like('%' + keyword + '%')
+        ).all()
+        return [user.to_dict() for user in users]
 
     def follow(self, follower_id, followed_id):
         follower = self.session.query(UserModel).filter_by(

@@ -23,6 +23,9 @@ APP_ID = 'wx59e1951717fc0bf4'
 APP_SECRET = 'fd98eb15684aa9a754be8b92e0ee3137'
 REDIRECT_URI = 'http%3a%2f%2f127.0.0.1%3a8080%2fverify'
 
+# 线上
+# REDIRECT_URI = 'http%3A%2F%2F60.205.178.36%3A8080%2Fverify'
+
 
 @tornado.gen.coroutine
 def send_confirm_mail(app, reciver, url):
@@ -55,6 +58,18 @@ class UserHandler(BaseHandler):
         self.write_data(users)
         self.finish()
 
+# 首页单个获取用户信息
+@route('/api/accounts/one')
+class OneUserHandler(BaseHandler):
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    @tornado.web.authenticated
+    def get(self):
+        offset = self.get_argument('offset')
+        limit = self.get_argument('limit')
+        users = self.user_service.get_user_of_one(offset, limit)
+        self.write_data(users)
 
 @route('/api/account/register')
 class RegisterHandler(BaseHandler):
@@ -94,6 +109,30 @@ class RegisterHandler(BaseHandler):
                 self.application, [self.get_argument('email')], url)
             rv.update(result.result())
 
+        self.write_data(rv)
+
+
+@route('/api/account/email')
+class BindMailHandler(BaseHandler):
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    @vld.define_arguments(
+        vld.Field('email', required=True)
+    )
+    @tornado.web.authenticated
+    @tornado.gen.coroutine
+    def post(self):
+        email = self.get_argument('email')
+        user_by_email = self.user_service.get_user_with_email(email)
+        print email
+        if user_by_email is not None:
+            rv = {'msg': '邮箱已经注册', 'ret': -1000}
+        else:
+            self.user_service.set_user_email(self.get_current_user()['id'], email)
+            result = yield send_confirm_mail(
+                self.application, [email], '您在ApeSo平台已经绑定了该邮箱')
+            rv = result.result()
         self.write_data(rv)
 
 
@@ -183,7 +222,6 @@ class GetUserWithNicknameHandler(BaseHandler):
     @vld.define_arguments(
         vld.Field('nickname', dtype=str, required=True)
     )
-    @tornado.web.authenticated
     def post(self):
         nickname = self.get_argument('nickname')
         user = self.user_service.get_user_with_nickname(nickname)
@@ -434,3 +472,16 @@ class FollowUserCount(BaseHandler):
             'followed': followed,
             'followers': followers
         })
+
+
+@route('/api/account/search')
+class FollowUserList(BaseHandler):
+
+    def initialize(self):
+        self.user_service = UserService(self.application.session())
+
+    def post(self):
+        value = self.get_argument('keyword')
+        self.write_data(
+            self.user_service.search_user(value)
+        )

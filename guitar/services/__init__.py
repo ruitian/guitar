@@ -11,3 +11,4 @@ from .user import *
 from .student import *
 from .tag import *
 from .dynamic import *
+from .chat import *

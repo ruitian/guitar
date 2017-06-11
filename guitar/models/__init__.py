@@ -10,3 +10,4 @@ from .tag import TagModel  # noqa
 from .relations import *  # noqa
 from .dynamics import *  # noqa
 from .praise import PraiseModel  # noqa
+from .chat import ChatModel  # noqa
